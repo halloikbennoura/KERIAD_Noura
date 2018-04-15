@@ -1,0 +1,109 @@
+#include <Adafruit_NeoPixel.h>
+
+#define NUMLEDS 60
+#define LEDPIN 5
+#define BUTTONPIN 6
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMLEDS, LEDPIN, NEO_GRB + NEO_KHZ800);
+
+int buttonState = 0;
+int counter = 0;
+int x = 0;
+int y = 0;
+int z = 0;
+
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println();
+
+
+  strip.begin();
+  pinMode(BUTTONPIN, INPUT);
+
+  pinMode(A0, INPUT);
+  pinMode(A1, INPUT);
+  pinMode(A2, INPUT);
+
+}
+
+
+void loop() {
+
+  buttonState = digitalRead(BUTTONPIN);
+  Serial.print("  button = ");
+  Serial.print(buttonState);
+  x = analogRead(A0);
+  y = analogRead(A1);
+  z = analogRead(A2);
+
+  Serial.print("  counter = ");
+  Serial.print(counter);
+
+  Serial.print("  z = ");
+  Serial.print(z);
+
+  Serial.print("  x = ");
+  Serial.print(x);
+
+  Serial.print("  y = ");
+  Serial.print(y);
+
+  // Als knop ingedrukt word + schommel stil staat: tel counter op
+  if ((buttonState == 1) && (z >= 300 && z <= 310)) {
+
+    counter++;
+    if (counter >= NUMLEDS) {
+      counter = NUMLEDS;
+    }
+
+  }
+
+  //Als knop NIET ingedrukt word: tel counter af
+  else { //if ((buttonState == LOW)) {
+    counter--;
+    if (counter <= -6) {
+      counter = -6;
+
+    }
+  }
+
+  // hoeveel ledjes er aanmoeten
+  int size = 6;
+
+  //kleur
+  float r = 125;
+  float g = 125;
+  float b = 125;
+
+  // gradient uiteinden
+  for (int i = -size; i <= size; i++)
+  {
+    strip.setPixelColor(counter + i,
+                        createRGB
+                        (
+
+                          r - ( ( r / size ) * abs(i) ), //125 - ( (125 / 3) * 3 ) = 125      = 0
+
+                          g - ( ( g / size ) * abs(i) ), //125 - ( (125 / 3) * 2 ) = 83.3333  = 42
+
+                          b - ( ( b / size ) * abs(i) )  //125 - ( (125 / 3) * 1 ) = 41.7     = 83
+                          //125 - ( (125 / 3) * 0 ) = 0        = 125
+                        )
+                       );
+  }
+
+
+  strip.show();
+  delay(80);
+
+
+
+}
+
+// code om kleur mee aan te geven
+unsigned long createRGB(unsigned long r, unsigned long g, unsigned long b)
+{
+  //return ( r & 0xff << 16 + g & 0xf << 8 + b & 0xff );
+  return (unsigned long)((r & 0xff) << 16) | (unsigned long)((g & 0xff) << 8) | (b & 0xff);
+}
